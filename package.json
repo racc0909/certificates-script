@@ -6,7 +6,8 @@
 	"type": "module",
 	"scripts": {
 		"create-certificates": "node src/script.js",
-		"send-emails": "node src/sendMails.js"
+		"send-emails": "node src/sendMails.js",
+		"clean": "rimraf ./certificates/docx/*.docx ./certificates/comment/*.docx ./certificates/pdf/*.pdf"
 	},
 	"keywords": [],
 	"author": "",

@@ -1,5 +1,11 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { Paragraph, PatchType, TextRun, patchDocument } from "docx";
+import {
+	AlignmentType,
+	Paragraph,
+	PatchType,
+	TextRun,
+	patchDocument,
+} from "docx";
 
 export function readTemplateFile(track, level) {
 	if (track === "IT-Projektmanagement" || track === "Deep Learning") {
@@ -108,40 +114,38 @@ export async function generateCommentFile(submission) {
 
 	const commentTemplate = readFileSync(commentTemplatePath);
 
+	// Create an array to hold all the TextRun objects
+	const commentChildren = [];
+
+	if (submission.comment) {
+		const commentLines = submission.comment.split("\n");
+
+		// Add each line with proper line breaks
+		commentLines.forEach((line, index) => {
+			// Add the text content
+			commentChildren.push(
+				new TextRun({
+					text: line,
+					alignment: AlignmentType.LEFT,
+					font: "Fira Code Light",
+					size: "10pt",
+					color: "000000",
+				})
+			);
+
+			// Add a line break if not the last line
+			if (index < commentLines.length - 1) {
+				commentChildren.push(new TextRun({ break: 1 }));
+			}
+		});
+	}
+
 	const commentDocument = await patchDocument(commentTemplate, {
 		patches: {
-			date: {
-				type: PatchType.PARAGRAPH,
-				children: [
-					new TextRun({
-						text: new Date().toLocaleDateString("de-DE"),
-						font: "Fira Code Light",
-						size: "12pt",
-						color: "000000",
-					}),
-				],
-			},
-			vorname: {
-				type: PatchType.PARAGRAPH,
-				children: [
-					new TextRun({
-						text: submission.firstName,
-						font: "Fira Code Light",
-						size: "10pt",
-						color: "000000",
-					}),
-				],
-			},
 			comment: {
 				type: PatchType.PARAGRAPH,
-				children: [
-					new TextRun({
-						text: submission.comment,
-						font: "Fira Code Light",
-						size: "10pt",
-						color: "000000",
-					}),
-				],
+				alignment: AlignmentType.LEFT,
+				children: commentChildren.length > 0 ? commentChildren : [],
 			},
 		},
 	});
